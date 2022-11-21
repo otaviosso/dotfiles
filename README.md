@@ -1,6 +1,6 @@
 # dotfiles
 
-My personal config for zsh.
+My personal configs.
 ## symlinks
 
 ```
