@@ -16,6 +16,7 @@ _comp_options+=(globdots)
 # [otavio@blablabla ~]$
 
 PROMPT='%B%F{#bf616a}[%f%F{#ebcb8b}%n%f%F{#a3be8c}@%F{#5e81ac}%M %f%F{#b48ead}%~%f%F{#bf616a}]%f$ %b'
+# PROMPT='%B%F{#e06c75}[%f%F{#e5c07b}%n%f%F{#98c379}@%F{#61afef}%M %f%F{#c678dd}%~%f%F{#e06c75}]%f$ %b'
 
 #Plugins
 
