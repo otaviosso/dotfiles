@@ -60,6 +60,14 @@ return packer.startup(function(use)
   use "nvim-telescope/telescope.nvim"
   -- Treesitter
   use "nvim-treesitter/nvim-treesitter"
+  use "mrjones2014/nvim-ts-rainbow"
+  -- Lualine
+  use {
+	'nvim-lualine/lualine.nvim',
+  	requires = { 'kyazdani42/nvim-web-devicons', opt = true }
+  }
+  -- Autopairs
+  use "windwp/nvim-autopairs"
   -- Automatically set up your configuration after cloning packer.nvim
   -- Put this at the end after all plugins
   if PACKER_BOOTSTRAP then
