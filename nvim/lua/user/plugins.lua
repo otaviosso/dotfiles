@@ -68,6 +68,19 @@ return packer.startup(function(use)
   }
   -- Autopairs
   use "windwp/nvim-autopairs"
+  -- Gitsigns
+  use "lewis6991/gitsigns.nvim"
+  -- NvimTree
+  use {
+	"nvim-tree/nvim-tree.lua",
+  	requires = { 'kyazdani42/nvim-web-devicons', opt = true }
+  }
+  -- Bufferline
+  use{
+	  "akinsho/bufferline.nvim",
+	  tag = "v3.*",
+	  requires = {"nvim-tree/nvim-web-devicons", opt = true}
+  }
   -- Automatically set up your configuration after cloning packer.nvim
   -- Put this at the end after all plugins
   if PACKER_BOOTSTRAP then
