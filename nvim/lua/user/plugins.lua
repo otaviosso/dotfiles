@@ -75,12 +75,19 @@ return packer.startup(function(use)
 	"nvim-tree/nvim-tree.lua",
   	requires = { 'kyazdani42/nvim-web-devicons', opt = true }
   }
-  -- Bufferline
-  use{
-	  "akinsho/bufferline.nvim",
-	  tag = "v3.*",
-	  requires = {"nvim-tree/nvim-web-devicons", opt = true}
-  }
+-- Lua
+use {
+  "folke/which-key.nvim",
+  config = function()
+    vim.o.timeout = true
+    vim.o.timeoutlen = 300
+    require("which-key").setup {
+      -- your configuration comes here
+      -- or leave it empty to use the default settings
+      -- refer to the configuration section below
+    }
+  end
+}
   -- Automatically set up your configuration after cloning packer.nvim
   -- Put this at the end after all plugins
   if PACKER_BOOTSTRAP then
