@@ -28,3 +28,5 @@ source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 
 #Zsh-completions
 fpath=(~/zsh-completions/src $fpath)
+# Swap caps and esc
+setxkbmap -option caps:swapescape
