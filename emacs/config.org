@@ -1,0 +1,357 @@
+*  UI and fixing some default behaviours
+
+** Disabling the default startup buffer
+#+begin_src emacs-lisp
+  (setq inhibit-startup-message t)
+
+  (scroll-bar-mode -1)
+  (tool-bar-mode -1)
+  (tooltip-mode -1)
+  (set-fringe-mode 10)
+  (menu-bar-mode -1)
+#+end_src
+
+** Disable backups and auto-saves
+#+begin_src emacs-lisp
+  (setq make-backup-files nil)
+  (setq auto-save-default nil)
+#+end_src
+
+** Change yes-or-no questions into y-or-n questions
+#+begin_src emacs-lisp
+  (defalias 'yes-or-no-p 'y-or-n-p)
+#+end_src
+
+** Disable dired from opening a lot of buffers
+#+begin_src emacs-lisp
+  (setq dired-kill-when-opening-new-dired-buffer t)
+#+end_src
+
+** Doom modeline
+#+begin_src emacs-lisp
+  (use-package all-the-icons  ;; Required to work correctly
+    :if (display-graphic-p))
+
+  (use-package doom-modeline
+    :init (doom-modeline-mode 1))
+  (setq doom-modeline-height 30)
+#+end_src
+
+** Doom themes
+#+begin_src emacs-lisp
+  (use-package doom-themes
+    :init (load-theme 'doom-vibrant t))
+#+end_src
+
+** Rainbow delimeters
+#+begin_src emacs-lisp
+  (use-package rainbow-delimiters
+    :hook (prog-mode . rainbow-delimiters-mode))
+#+end_src
+
+** Line numbers  
+#+begin_src emacs-lisp
+  (column-number-mode)
+  (global-display-line-numbers-mode t)
+
+  ;; Disable for some modes
+  ;;todo: fix this
+  (dolist (mode '(org-mode-hook
+                  term-mode-hook
+                  eshell-mode-hook))
+    (add-hook mode (lambda () (display-line-numbers-mode 0))))
+#+end_src
+
+** Making ESC quit prompts
+#+begin_src emacs-lisp
+  (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+#+end_src
+
+** Changing TAB size
+#+begin_src emacs-lisp
+   (setq custom-tab-width 4)
+
+   (defun enable-tabs  ()
+     (local-set-key (kbd "TAB") 'tab-to-tab-stop)
+     (setq indent-tabs-mode t)
+     (setq tab-width custom-tab-width))
+  (defun disable-tabs () (setq indent-tabs-mode nil))
+   ;;enable tabs on prog-mode
+   (add-hook 'prog-mode-hook 'enable-tabs)
+  ;; Hooks to Disable Tabs
+(add-hook 'lisp-mode-hook 'disable-tabs)
+(add-hook 'emacs-lisp-mode-hook 'disable-tabs)
+   ;; Fix indentation
+   (setq-default electric-indent-inhibit t)
+  #+end_src
+
+** Autopairs
+#+begin_src emacs-lisp
+  (setq electric-pair-pairs '(
+                              (?\{ . ?\})
+                              (?\( . ?\))
+                              (?\[ . ?\])
+                              (?\" . ?\")
+                              ))
+
+  (electric-pair-mode t)
+#+end_src
+
+* Keybindings
+
+** Ivy
+#+begin_src emacs-lisp
+  (use-package ivy
+    :diminish
+    :bind (("C-s" . swiper)
+           :map ivy-minibuffer-map
+           ("TAB" . ivy-alt-done)	
+           ("C-l" . ivy-alt-done)
+           ("C-j" . ivy-next-line)
+           ("C-k" . ivy-previous-line)
+           :map ivy-switch-buffer-map
+           ("C-k" . ivy-previous-line)
+           ("C-l" . ivy-done)
+           ("C-d" . ivy-switch-buffer-kill)
+           :map ivy-reverse-i-search-map
+           ("C-k" . ivy-previous-line)
+           ("C-d" . ivy-reverse-i-search-kill))
+    :config
+    (ivy-mode 1))
+#+end_src
+
+** Counsel
+#+begin_src emacs-lisp
+  (use-package counsel
+    :bind (("M-x" . counsel-M-x)
+           ("C-x b" . counsel-ibuffer)
+           ("C-x C-f" . counsel-find-file)
+           :map minibuffer-local-map
+           ("C-r" . 'counsel-minibuffer-history))
+    :config
+    (setq ivy-initial-inputs-alist nil))
+#+end_src
+*** TODO Buffer switching
+#+begin_src emacs-lisp
+  (global-set-key (kbd "C-M-j") 'counsel-switch-buffer) 
+#+end_src
+
+** Which-key
+#+begin_src emacs-lisp
+  (use-package which-key
+    :init (which-key-mode);; auto initialize after installation
+    :diminish which-key-mode
+    :config
+    (setq which-key-idle-delay 0.3))
+#+end_src
+
+** Helpful
+Improves the *help* buffer.
+#+begin_src emacs-lisp
+  (use-package helpful
+    :commands (helpful-callable helpful-variable helpful-command helpful-key)
+    :custom ;; Set values of customizable variables
+    (counsel-describe-function-function #'helpful-callable)
+    (counsel-describe-variable-function #'helpful-variable)
+    :bind
+    ([remap describe-function] . counsel-describe-function)
+    ([remap describe-command] . helpful-command)
+    ([remap describe-variable] . counsel-describe-variable)
+    ([remap describe-key] . helpful-key))
+#+end_src
+
+** General
+#+begin_src emacs-lisp
+  (use-package general
+    :config
+    (general-create-definer oss/leader-keys
+      :keymaps '(normal insert visual emacs)
+      :prefix "SPC"
+      :global-prefix "C-SPC")
+
+    (oss/leader-keys
+      "t"  '(:ignore t :which-key "toggles")
+      "tt" '(counsel-load-theme :which-key "choose theme")))
+#+end_src
+
+** Buffer switching
+#+begin_src emacs-lisp 
+  (oss/leader-keys
+    "f" '(:ignore t :which-key "Find")
+    "fb" '(counsel-switch-buffer :which-key "Switch buffer")
+    "ff" '(counsel-find-file :which-key "Find file"))
+#+end_src
+
+** Evil-mode
+#+begin_src emacs-lisp
+  (use-package evil
+    :init
+    (setq evil-want-integration t)
+    (setq evil-want-keybinding nil)
+    (setq evil-want-C-u-scroll t)
+    (setq evil-want-C-i-jump nil)
+    :config
+    (evil-mode 1)
+    (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+    (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
+
+    ;; Use visual line motions even outside of visual-line-mode buffers
+    (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+    (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+
+    (evil-set-initial-state 'messages-buffer-mode 'normal)
+    (evil-set-initial-state 'dashboard-mode 'normal))
+
+  (use-package evil-collection
+    :after evil
+    :config
+    (evil-collection-init))
+#+end_src
+
+** Hydra
+#+begin_src emacs-lisp
+  (use-package hydra) ;; Good for cycling through buffers
+
+  (defhydra hydra-text-scale (:timeout 4)
+    "scale text"
+    ("j" text-scale-increase "in")
+    ("k" text-scale-decrease "out")
+    ("f" nil "finished" :exit t))
+
+  (oss/leader-keys
+    "ts" '(hydra-text-scale/body :which-key "scale text"))
+#+end_src
+
+** Ivy-rich
+#+begin_src emacs-lisp
+  (use-package ivy-rich
+    :init
+    (ivy-rich-mode 1))
+#+end_src
+
+
+* Project management
+** Projectile
+#+begin_src emacs-lisp
+  (use-package projectile
+    :diminish projectile-mode
+    :config (projectile-mode)
+    :custom ((projectile-completion-system 'ivy))
+    :bind-keymap
+    ("C-c p" . projectile-command-map)
+    :init
+    (projectile-mode 1)
+    (when (file-directory-p "~/Documents/Projects")
+      (setq projectile-project-search-path '("~/Documents/Projects")))
+    (setq projectile-switch-project-action #'projectile-dired)) 
+#+end_src
+
+** Counsel-projectile
+#+begin_src emacs-lisp
+  (use-package counsel-projectile
+    :config (counsel-projectile-mode))
+#+end_src
+
+** Magit
+#+begin_src emacs-lisp
+  (use-package magit
+    :custom
+    (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+
+  (oss/leader-keys
+    "g" '(:ignore t :which-key "git")
+    "gs" '(magit-status :which-key "git status"))
+#+end_src
+
+** Forge (config later)
+#+begin_src emacs-lisp
+  (use-package forge)
+#+end_src
+
+
+* Org-mode
+
+** Change the default appearance
+#+begin_src emacs-lisp
+  (defun oss/org-mode-setup ()
+    (org-indent-mode)
+    (variable-pitch-mode 1)
+    (visual-line-mode 1))
+
+  (use-package org
+    :hook (org-mode . oss/org-mode-setup)
+    :config
+    (setq org-ellipsis " ▾"))
+#+end_src
+
+** Org bullets
+#+begin_src emacs-lisp
+  (use-package org-bullets
+    :after org
+    :hook (org-mode . org-bullets-mode)
+    :custom
+    (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
+#+end_src
+
+** Making the old snippets work again
+#+begin_src emacs-lisp
+  (require 'org-tempo)
+#+end_src
+
+* LSP
+** Installation
+#+begin_src emacs-lisp
+  (use-package lsp-mode
+    :commands (lsp lsp-deferred)
+    :init
+    (setq lsp-keymap-prefix "C-c l")
+    :config
+    (lsp-enable-which-key-integration t))
+(setq-default indent-tabs-mode t)
+  (oss/leader-keys
+     "l"  '(:ignore t :which-key "lsp")
+     "ld" '(lsp-find-definition :which-key "Find definition")
+     "lr" '(lsp-find-references :which-key "Find references")
+     "lR" '(lsp-rename :which-key "Rename symbol")
+     "ll" '(flymake-show-buffer-diagnostics :which-key "Show diagnostics"))
+
+  (setq lsp-modeline-code-actions-mode t)
+
+  (defun oss/breadcrumb-setup ()
+    (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+    (lsp-headerline-breadcrumb-mode))
+#+end_src
+
+** lsp-ui
+#+begin_src emacs-lisp
+  (use-package lsp-ui
+    :hook (lsp-mode . lsp-ui-mode)
+    :custom
+    (lsp-ui-doc-position 'bottom))
+#+end_src
+
+
+** Languages
+*** C
+#+begin_src emacs-lisp
+  (add-hook 'c-mode-hook 'lsp)
+  ;; change tab size
+  (setq-default c-basic-offset custom-tab-width)
+#+end_src
+
+** Company
+#+begin_src emacs-lisp
+  (use-package company
+    :after lsp-mode
+    :hook (lsp-mode . company-mode)
+    ;;:bind (:map company-active-map
+      ;;     ("<tab>" . company-complete-selection))
+        ;;  (:map lsp-mode-map
+          ;; ("<tab>" . company-indent-or-complete-common))
+    :custom
+    (company-minimum-prefix-length 1)
+    (company-idle-delay 0.0))
+
+  (use-package company-box
+    :hook (company-mode . company-box-mode))
+#+end_src
