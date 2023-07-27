@@ -118,13 +118,20 @@
            ("C-d" . ivy-reverse-i-search-kill))
     :config
     (ivy-mode 1))
+    (global-set-key (kbd "C-x b") 'counsel-switch-buffer)
 #+end_src
 
+** Avy
+#+begin_src emacs-lisp
+  (use-package avy
+    :bind
+      ("M-s" . avy-goto-char))
+#+end_src
 ** Counsel
 #+begin_src emacs-lisp
   (use-package counsel
     :bind (("M-x" . counsel-M-x)
-           ("C-x b" . counsel-ibuffer)
+;;           ("C-x b" . ibuffer)
            ("C-x C-f" . counsel-find-file)
            :map minibuffer-local-map
            ("C-r" . 'counsel-minibuffer-history))
@@ -160,52 +167,17 @@ Improves the *help* buffer.
     ([remap describe-key] . helpful-key))
 #+end_src
 
-** General
+** Prefix key
 #+begin_src emacs-lisp
-  (use-package general
-    :config
-    (general-create-definer oss/leader-keys
-      :keymaps '(normal insert visual emacs)
-      :prefix "SPC"
-      :global-prefix "C-SPC")
+  ;;  (define-prefix-command 'oss/prefix-keys)
+   ;; (global-set-key (kbd "C-c SPC") 'oss/prefix-keys)
 
-    (oss/leader-keys
-      "t"  '(:ignore t :which-key "toggles")
-      "tt" '(counsel-load-theme :which-key "choose theme")))
-#+end_src
+  ;; (oss/prefix-keys
+    ;;  "t"  '(:ignore t :which-key "toggles")
+     ;; "tt" '(counsel-load-theme :which-key "choose theme"))
+    (global-set-key (kbd "C-c SPC tt") 'counsel-load-theme)
+      
 
-** Buffer switching
-#+begin_src emacs-lisp 
-  (oss/leader-keys
-    "f" '(:ignore t :which-key "Find")
-    "fb" '(counsel-switch-buffer :which-key "Switch buffer")
-    "ff" '(counsel-find-file :which-key "Find file"))
-#+end_src
-
-** Evil-mode
-#+begin_src emacs-lisp
-  (use-package evil
-    :init
-    (setq evil-want-integration t)
-    (setq evil-want-keybinding nil)
-    (setq evil-want-C-u-scroll t)
-    (setq evil-want-C-i-jump nil)
-    :config
-    (evil-mode 1)
-    (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
-    (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
-
-    ;; Use visual line motions even outside of visual-line-mode buffers
-    (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-    (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
-
-    (evil-set-initial-state 'messages-buffer-mode 'normal)
-    (evil-set-initial-state 'dashboard-mode 'normal))
-
-  (use-package evil-collection
-    :after evil
-    :config
-    (evil-collection-init))
 #+end_src
 
 ** Hydra
@@ -217,9 +189,8 @@ Improves the *help* buffer.
     ("j" text-scale-increase "in")
     ("k" text-scale-decrease "out")
     ("f" nil "finished" :exit t))
-
-  (oss/leader-keys
-    "ts" '(hydra-text-scale/body :which-key "scale text"))
+      
+  (global-set-key (kbd "C-c SPC ts") 'hydra-text-scale/body)
 #+end_src
 
 ** Ivy-rich
@@ -258,9 +229,7 @@ Improves the *help* buffer.
     :custom
     (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
-  (oss/leader-keys
-    "g" '(:ignore t :which-key "git")
-    "gs" '(magit-status :which-key "git status"))
+  (global-set-key (kbd "C-c SPC gs") 'magit-status)
 #+end_src
 
 ** Forge (config later)
@@ -305,15 +274,22 @@ Improves the *help* buffer.
     :commands (lsp lsp-deferred)
     :init
     (setq lsp-keymap-prefix "C-c l")
+    :custom
+    (lsp-rust-analyzer-server-display-inlay-hints t)
+  (lsp-rust-analyzer-display-lifetime-elision-hints-enable "skip_trivial")
+  (lsp-rust-analyzer-display-chaining-hints t)
+  (lsp-rust-analyzer-display-lifetime-elision-hints-use-parameter-names nil)
+  (lsp-rust-analyzer-display-closure-return-type-hints t)
+  (lsp-rust-analyzer-display-parameter-hints nil)
+  (lsp-rust-analyzer-display-reborrow-hints nil)
     :config
     (lsp-enable-which-key-integration t))
-(setq-default indent-tabs-mode t)
-  (oss/leader-keys
-     "l"  '(:ignore t :which-key "lsp")
-     "ld" '(lsp-find-definition :which-key "Find definition")
-     "lr" '(lsp-find-references :which-key "Find references")
-     "lR" '(lsp-rename :which-key "Rename symbol")
-     "ll" '(flymake-show-buffer-diagnostics :which-key "Show diagnostics"))
+  (setq-default indent-tabs-mode t)
+
+  (global-set-key (kbd "C-c SPC ld") 'lsp-find-definition)
+  (global-set-key (kbd "C-c SPC lr") 'lsp-find-references)
+  (global-set-key (kbd "C-c SPC lR") 'lsp-rename)
+  (global-set-key (kbd "C-c SPC ll") 'flymake-show-buffer-diagnostics)
 
   (setq lsp-modeline-code-actions-mode t)
 
@@ -330,13 +306,38 @@ Improves the *help* buffer.
     (lsp-ui-doc-position 'bottom))
 #+end_src
 
-
+** Yasnippets
+#+begin_src emacs-lisp
+    (use-package yasnippet
+        :config
+        (yas-global-mode 1)
+        :bind
+        (:map yas-minor-mode-map
+            ("<tab>" . yas-expand))
+        :config
+        (yas-reload-all)
+        (add-hook 'prog-mode-hook 'yas-minor-mode))
+    (setq lsp-completion-provider :none)
+    (with-eval-after-load 'lsp-mode
+      (yas-global-mode))
+#+end_src
 ** Languages
 *** C
 #+begin_src emacs-lisp
   (add-hook 'c-mode-hook 'lsp)
+  (setq yas-minor-mode t)
   ;; change tab size
   (setq-default c-basic-offset custom-tab-width)
+#+end_src
+
+*** Rust
+#+begin_src emacs-lisp
+    (use-package rustic
+        :config
+        (require 'lsp-rust))
+   (add-hook 'rustic-mode-hook 'lsp)
+   (add-hook 'rustic-mode-hook 'yas-minor-mode)
+  (setq rustic-analyzer-command '("~/.cargo/bin/rust-analyzer"))
 #+end_src
 
 ** Company
@@ -344,10 +345,10 @@ Improves the *help* buffer.
   (use-package company
     :after lsp-mode
     :hook (lsp-mode . company-mode)
-    ;;:bind (:map company-active-map
-      ;;     ("<tab>" . company-complete-selection))
-        ;;  (:map lsp-mode-map
-          ;; ("<tab>" . company-indent-or-complete-common))
+    :bind (:map company-active-map
+           ("<tab>" . company-complete-selection))
+          (:map lsp-mode-map
+           ("<tab>" . company-indent-or-complete-common))
     :custom
     (company-minimum-prefix-length 1)
     (company-idle-delay 0.0))
